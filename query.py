@@ -28,7 +28,7 @@ from typing import List, Tuple, Dict, Optional
 
 import numpy as np
 
-from main import _extract_worker, _vec_to_list, DBPool, DB_CONFIG, FEATURE_DIM
+from main import _extract_worker, _vec_to_list, DBPool, DB_CONFIG
 from k_d_tree import sim as kdtree_sim, build_trees
 
 logging.basicConfig(
@@ -188,17 +188,21 @@ def _get_relevant_ids(
     """
     with db.conn() as conn:
         cur = conn.cursor()
-        if query_file_path:
-            cur.execute("""
-                SELECT obj_id FROM multimedia_objects
-                WHERE  speaker_name = %s
-                  AND  file_path   != %s;
-            """, (query_speaker, query_file_path))
-        else:
-            cur.execute("""
-                SELECT obj_id FROM multimedia_objects
-                WHERE  speaker_name = %s;
-            """, (query_speaker,))
+        # if query_file_path:
+        #     cur.execute("""
+        #         SELECT obj_id FROM multimedia_objects
+        #         WHERE  speaker_name = %s
+        #           AND  file_path   != %s;
+        #     """, (query_speaker, query_file_path))
+        # else:
+        #     cur.execute("""
+        #         SELECT obj_id FROM multimedia_objects
+        #         WHERE  speaker_name = %s;
+        #     """, (query_speaker,))
+        cur.execute("""
+            SELECT obj_id FROM multimedia_objects
+            WHERE  speaker_name = %s;
+        """, (query_speaker,))
         rows = cur.fetchall()
 
     return [r[0] for r in rows]
@@ -374,7 +378,7 @@ def run_all(
 # ===========================================================================
 if __name__ == "__main__":
     # Example: query with a file already in the corpus (speaker auto-detected)
-    QUERY_FILE = "/home/a/static/LibriSpeech/dev-clean/251_137823_251-137823-0016.flac"
+    QUERY_FILE = "/home/a/static/LibriSpeech/dev-clean/652_129742_652-129742-0000.flac"
 
     # Optionally override speaker name for files NOT in the corpus:
     # run_all(QUERY_FILE, query_speaker="251", k=10)
