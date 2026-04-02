@@ -1,4 +1,6 @@
 docs
+kdtree_minmax.pkl
+kdtree_zscore.pkl
 output.txt
 .venv
 __pycache__
