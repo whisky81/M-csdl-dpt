@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Search with Segmentation + DTW</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .control-group {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .engine-selector {
+            display: flex;
+            gap: 10px;
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        audio { width: 100%; }
+        .loading { display: none; margin: 10px 0; }
+        .error { color: red; margin: 10px 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Voice Similarity Search (Segmentation + DTW)</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="control-group">
+            <input type="file" name="file" accept="audio/*" required>
+        </div>
+
+        <div class="control-group">
+            <label><strong>Search Engine:</strong></label>
+            <div class="engine-selector">
+                <label>
+                    <input type="radio" name="engine" value="ivfflat" checked> IVFFlat (pgvector)
+                </label>
+                <label>
+                    <input type="radio" name="engine" value="kdtree"> KD-Tree (exact)
+                </label>
+            </div>
+        </div>
+
+        <button type="submit">Search</button>
+    </form>
+
+    <div class="loading" id="loading">⏳ Processing... Please wait (this may take a few seconds).</div>
+    <div class="error" id="error"></div>
+    <div id="results"></div>
+</div>
+
+<script>
+    // Ẩn/hiện metric selector khi chọn engine
+    const engineRadios = document.querySelectorAll('input[name="engine"]');
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('error').innerText = '';
+        document.getElementById('results').innerHTML = '';
+
+        try {
+            const resp = await fetch('/search', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.error) throw new Error(data.error);
+            renderResults(data.results);
+        } catch (err) {
+            document.getElementById('error').innerText = err.message;
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+
+    function renderResults(results) {
+        if (!results || results.length === 0) {
+            document.getElementById('results').innerHTML = '<p>No results found.</p>';
+            return;
+        }
+
+        let html = '<h2>Top 5 Similar Files</h2>';
+        html += '<table><tr><th>#</th><th>File</th><th>Speaker</th><th>DTW Distance</th><th>Audio</th></tr>';
+        results.forEach((r, i) => {
+            html += `<tr>
+                <td>${i+1}</td>
+                <td>${r.file_name}</td>
+                <td>${r.speaker || 'unknown'}</td>
+                <td>${r.dtw_distance.toFixed(4)}</td>
+                <td><audio controls src="${r.audio_url}"></audio></td>
+            </tr>`;
+        });
+        html += '</table>';
+        document.getElementById('results').innerHTML = html;
+    }
+</script>
+</body>
+</html>
