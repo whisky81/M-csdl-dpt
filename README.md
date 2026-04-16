@@ -1,2 +1,2 @@
 - Chi tiết tại  [README.md](./v2/README.md)
-- tổng quan cách hoạt động [workflow.md](./v2/workflow.md)
+- tổng quan cách hoạt động [workflow.md](./workflow.md)
