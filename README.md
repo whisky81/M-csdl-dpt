@@ -89,6 +89,7 @@ pip install -r requirements.txt
 ## 4. Thiết lập PostgreSQL
 
 ### 4.1 Tạo bảng
+`Lưu ý`: tạo database tên `mmdb` trước rồi sau đó tải extension `pgvector` theo hướng dẫn ở [pgvector repo](https://github.com/pgvector/pgvector)
 
 Kết nối vào PostgreSQL và chạy các lệnh sau:
 
