@@ -6,6 +6,5 @@ output.txt
 __pycache__
 LibriSpeech
 update.md
-workflow.md
 steps_by_steps.md
 notes.md
