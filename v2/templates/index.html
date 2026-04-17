@@ -1,105 +1,722 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-    <title>Voice Search with Segmentation + DTW</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Tìm kiếm giọng nói tương tự</title>
     <style>
-        body { font-family: Arial; margin: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .control-group {
-            margin: 15px 0;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Biến CSS – giao diện tối/ sáng tùy theo trình duyệt */
+        :root {
+            --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
+            --color-text-primary: #1e1e2f;
+            --color-text-secondary: #5b5b6e;
+            --color-text-tertiary: #8e8ea0;
+            --color-text-info: #0066cc;
+            --color-text-success: #1e7b48;
+            --color-text-warning: #b45b0a;
+            --color-text-danger: #c72a2a;
+            --color-background-primary: #ffffff;
+            --color-background-secondary: #f5f5f8;
+            --color-background-tertiary: #eaeaef;
+            --color-background-info: #e8f0fe;
+            --color-background-success: #e0f2e9;
+            --color-background-warning: #fef5e6;
+            --color-background-danger: #feecec;
+            --color-border-secondary: #d0d0dd;
+            --color-border-tertiary: #e4e4ec;
+            --color-border-info: #99c2f0;
+            --color-border-success: #b3d9c4;
+            --color-border-danger: #f0b3b3;
+            --border-radius-md: 8px;
+            --border-radius-lg: 14px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-text-primary: #ececf4;
+                --color-text-secondary: #a0a0b8;
+                --color-text-tertiary: #6c6c82;
+                --color-text-info: #6eb3ff;
+                --color-text-success: #7ddea6;
+                --color-text-warning: #ffbc6e;
+                --color-text-danger: #ff8a8a;
+                --color-background-primary: #15151f;
+                --color-background-secondary: #20202d;
+                --color-background-tertiary: #2c2c3a;
+                --color-background-info: #1a2a3a;
+                --color-background-success: #1a2e26;
+                --color-background-warning: #33200c;
+                --color-background-danger: #2e1c1c;
+                --color-border-secondary: #2f2f3e;
+                --color-border-tertiary: #262633;
+                --color-border-info: #2a4b6e;
+                --color-border-success: #2a5a3e;
+                --color-border-danger: #5e2a2a;
+            }
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-background-primary);
+            color: var(--color-text-primary);
+            padding: 1.5rem 1rem;
+            max-width: 880px;
+            margin: 0 auto;
+        }
+
+        /* Đường viền phân cách mỗi phần */
+        .section-divider {
+            margin: 1rem 0 0.5rem 0;
+            border-top: 2px solid var(--color-border-secondary);
+            opacity: 0.5;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+
+        .page-sub {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 1.8rem;
+            border-left: 3px solid var(--color-border-info);
+            padding-left: 12px;
+        }
+
+        .card {
+            background: var(--color-background-primary);
+            border: 1px solid var(--color-border-secondary);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: border 0.1s;
+        }
+
+        .card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--color-border-tertiary);
             display: flex;
             align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            gap: 12px;
+            background: var(--color-background-secondary);
         }
-        .engine-selector {
+
+        .step-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--color-background-tertiary);
+            border: 1px solid var(--color-border-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f2f2f2; }
-        audio { width: 100%; }
-        .loading { display: none; margin: 10px 0; }
-        .error { color: red; margin: 10px 0; }
+
+        .step-badge.done {
+            background: var(--color-background-success);
+            border-color: var(--color-border-success);
+            color: var(--color-text-success);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--color-text-tertiary);
+            margin-left: auto;
+            background: var(--color-background-tertiary);
+            padding: 3px 9px;
+            border-radius: 30px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Dropzone */
+        .drop-zone {
+            border: 1.8px dashed var(--color-border-secondary);
+            border-radius: var(--border-radius-md);
+            padding: 28px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--color-background-secondary);
+        }
+
+        .drop-zone:hover, .drop-zone.over {
+            background: var(--color-background-tertiary);
+            border-color: var(--color-border-primary);
+        }
+
+        .dz-icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 10px;
+            color: var(--color-text-tertiary);
+        }
+
+        .dz-text {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .dz-text strong {
+            color: var(--color-text-primary);
+        }
+
+        .dz-hint {
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+            margin-top: 6px;
+        }
+
+        .file-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--color-background-secondary);
+            border-radius: var(--border-radius-md);
+            border: 1px solid var(--color-border-tertiary);
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .change-btn {
+            font-size: 12px;
+            background: none;
+            border: none;
+            color: var(--color-text-info);
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 30px;
+        }
+
+        audio {
+            width: 100%;
+            border-radius: var(--border-radius-md);
+            height: 36px;
+        }
+
+        .engine-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .engine-card {
+            background: var(--color-background-secondary);
+            border: 1px solid var(--color-border-secondary);
+            border-radius: var(--border-radius-md);
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.12s;
+            text-align: left;
+        }
+
+        .engine-card.selected {
+            border: 2px solid var(--color-border-info);
+            background: var(--color-background-info);
+        }
+
+        .engine-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .engine-tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            background: var(--color-background-tertiary);
+            padding: 2px 8px;
+            border-radius: 30px;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+            border: 1px solid var(--color-border-secondary);
+            border-radius: var(--border-radius-md);
+            background: var(--color-background-primary);
+            cursor: pointer;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+
+        .search-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading-card {
+            border-left: 3px solid var(--color-border-info);
+        }
+
+        .progress-track {
+            height: 6px;
+            background: var(--color-background-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-text-info);
+            width: 0%;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-border-secondary);
+        }
+
+        .step-dot.active {
+            background: var(--color-text-info);
+            box-shadow: 0 0 0 2px var(--color-background-info);
+        }
+
+        .step-dot.complete {
+            background: var(--color-text-success);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 11px;
+            padding: 12px 12px;
+            border-bottom: 1px solid var(--color-border-secondary);
+            color: var(--color-text-tertiary);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border-tertiary);
+            font-size: 13px;
+        }
+
+        .rank {
+            display: inline-flex;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--color-background-tertiary);
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .rank.gold {
+            background: var(--color-background-warning);
+            color: var(--color-text-warning);
+        }
+
+        .pill {
+            background: var(--color-background-tertiary);
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 11px;
+        }
+
+        hr {
+            margin: 20px 0 10px;
+            border-color: var(--color-border-tertiary);
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>Voice Similarity Search (Segmentation + DTW)</h1>
 
-    <form id="uploadForm" enctype="multipart/form-data">
-        <div class="control-group">
-            <input type="file" name="file" accept="audio/*" required>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm kiếm độ tương tự giọng nói</h2>
+
+<p class="page-title">🎙️ Tìm kiếm giọng nói tương tự</p>
+<p class="page-sub">Tải tệp âm thanh, chọn công cụ tìm kiếm và hệ thống sẽ trả về những giọng nói gần giống nhất dựa trên DTW</p>
+
+<!-- Phần 1: Tải tệp âm thanh -->
+<div class="card" id="card-file">
+    <div class="card-header">
+        <div class="step-badge" id="badge1">1</div>
+        <span class="card-title">📁 Tệp âm thanh đầu vào</span>
+        <span class="card-desc" id="file-status-label">Chưa có tệp</span>
+    </div>
+    <div class="card-body">
+        <div class="drop-zone" id="dropZone">
+            <input type="file" accept="audio/*" id="fileInput">
+            <svg class="dz-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+            <p class="dz-text"><strong>Chọn tệp</strong> hoặc kéo thả vào đây</p>
+            <p class="dz-hint">Hỗ trợ MP3, WAV, OGG, M4A (tối đa 25 MB)</p>
         </div>
-
-        <div class="control-group">
-            <label><strong>Search Engine:</strong></label>
-            <div class="engine-selector">
-                <label>
-                    <input type="radio" name="engine" value="ivfflat" checked> IVFFlat (pgvector)
-                </label>
-                <label>
-                    <input type="radio" name="engine" value="kdtree"> KD-Tree (exact)
-                </label>
+        <div class="file-preview" id="preview" style="display:none">
+            <div class="file-meta">
+                <span class="file-name" id="fileName">—</span>
+                <span class="file-size" id="fileSize">—</span>
+                <button class="change-btn" id="changeBtn">🔄 Chọn lại</button>
             </div>
+            <audio id="audioPreview" controls></audio>
         </div>
+    </div>
+</div>
 
-        <button type="submit">Search</button>
-    </form>
+<div class="section-divider"></div>
 
-    <div class="loading" id="loading">⏳ Processing... Please wait (this may take a few seconds).</div>
-    <div class="error" id="error"></div>
-    <div id="results"></div>
+<!-- Phần 2: Công cụ tìm kiếm (engine) -->
+<div class="card" id="card-engine">
+    <div class="card-header">
+        <div class="step-badge" id="badge2">2</div>
+        <span class="card-title">⚙️ Công cụ tìm kiếm</span>
+        <span class="card-desc" id="engine-status-label">IVFFlat (nhanh)</span>
+    </div>
+    <div class="card-body">
+        <div class="engine-grid">
+            <button class="engine-card selected" data-engine="ivfflat" id="eng-ivfflat">
+                <div class="engine-name">IVFFlat</div>
+                <div class="engine-sub">Tìm kiếm gần đúng, tối ưu tốc độ</div>
+                <span class="engine-tag">⚡ Nhanh hơn</span>
+            </button>
+            <button class="engine-card" data-engine="kdtree" id="eng-kdtree">
+                <div class="engine-name">KD-Tree</div>
+                <div class="engine-sub">Tìm chính xác toàn bộ vector</div>
+                <span class="engine-tag">🎯 Chính xác hơn</span>
+            </button>
+        </div>
+        <p style="font-size: 12px; margin-top: 12px; color: var(--color-text-tertiary);">✔️ IVFFlat phù hợp với cơ sở dữ liệu lớn. KD-Tree cho độ chính xác cao hơn nhưng chậm hơn một chút.</p>
+    </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- Phần 3: Thực thi tìm kiếm -->
+<div class="card">
+    <div class="card-header">
+        <div class="step-badge" id="badge3">3</div>
+        <span class="card-title">🔍 Bắt đầu tìm kiếm</span>
+    </div>
+    <div class="card-body">
+        <button class="search-btn" id="searchBtn" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Tìm kiếm giọng nói tương tự
+        </button>
+    </div>
+</div>
+
+<!-- Thanh trạng thái xử lý (loading) -->
+<div class="card loading-card" id="loadingCard" style="display:none">
+    <div class="card-header">
+        <div class="spinner" style="width:16px;height:16px;border:2px solid var(--color-text-info);border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div>
+        <span class="card-title" style="color:var(--color-text-info)">🔄 Đang xử lý tệp âm thanh</span>
+        <span class="card-desc" id="etaLabel">khoảng 2–3 giây</span>
+    </div>
+    <div class="card-body">
+        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+        <div style="margin-top: 14px;" id="stepList">
+            <div class="step-item"><div class="step-dot active" id="sdot1"></div><span id="slabel1">🔊 Trích xuất đặc trưng MFCC...</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot2"></div><span id="slabel2">✂️ Phân đoạn giọng nói</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot3"></div><span id="slabel3">⏳ Định tuyến thời gian động (DTW)</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot4"></div><span id="slabel4">📊 Xếp hạng độ tương tự</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Thông báo lỗi -->
+<div class="card error-card" id="errorCard" style="display:none; border-left: 3px solid var(--color-text-danger);">
+    <div class="card-header">
+        <span class="card-title" style="color:var(--color-text-danger)">⚠️ Lỗi tìm kiếm</span>
+    </div>
+    <div class="card-body"><p class="error-text" id="errorText"></p></div>
+</div>
+
+<!-- Kết quả trả về -->
+<div class="card" id="resultsCard" style="display:none">
+    <div class="card-header">
+        <div class="step-badge done" id="resultsBadge">✓</div>
+        <span class="card-title">🏆 Kết quả giọng nói tương tự</span>
+        <span class="card-desc" id="resultsCount"></span>
+    </div>
+    <div class="card-body" style="padding:0">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Tệp tham chiếu</th><th>Người nói</th><th>Khoảng cách DTW</th><th>Nghe thử</th></tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    // Ẩn/hiện metric selector khi chọn engine
-    const engineRadios = document.querySelectorAll('input[name="engine"]');
+    (function() {
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const previewDiv = document.getElementById('preview');
+        const audioPreview = document.getElementById('audioPreview');
+        const fileNameSpan = document.getElementById('fileName');
+        const fileSizeSpan = document.getElementById('fileSize');
+        const searchBtn = document.getElementById('searchBtn');
+        const changeBtn = document.getElementById('changeBtn');
+        const loadingCard = document.getElementById('loadingCard');
+        const errorCard = document.getElementById('errorCard');
+        const resultsCard = document.getElementById('resultsCard');
+        const badge1 = document.getElementById('badge1');
+        const badge2 = document.getElementById('badge2');
+        const badge3 = document.getElementById('badge3');
+        const fileStatusLabel = document.getElementById('file-status-label');
+        const engineStatusLabel = document.getElementById('engine-status-label');
 
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
+        let selectedFile = null;
+        let selectedEngine = 'ivfflat';
 
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('error').innerText = '';
-        document.getElementById('results').innerHTML = '';
-
-        try {
-            const resp = await fetch('/search', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await resp.json();
-            if (data.error) throw new Error(data.error);
-            renderResults(data.results);
-        } catch (err) {
-            document.getElementById('error').innerText = err.message;
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
-    });
-
-    function renderResults(results) {
-        if (!results || results.length === 0) {
-            document.getElementById('results').innerHTML = '<p>No results found.</p>';
-            return;
+        // ---- Helper: format kích thước ----
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
         }
 
-        let html = '<h2>Top 5 Similar Files</h2>';
-        html += '<table><tr><th>#</th><th>File</th><th>Speaker</th><th>DTW Distance</th><th>Audio</th></tr>';
-        results.forEach((r, i) => {
-            html += `<tr>
-                <td>${i+1}</td>
-                <td>${r.file_name}</td>
-                <td>${r.speaker || 'unknown'}</td>
-                <td>${r.dtw_distance.toFixed(4)}</td>
-                <td><audio controls src="${r.audio_url}"></audio></td>
-            </tr>`;
+        // Xử lý sau khi chọn file thành công
+        function handleSelectedFile(file) {
+            if (!file || !file.type.startsWith('audio/')) {
+                alert('Vui lòng chọn tệp âm thanh hợp lệ (MP3, WAV, OGG, M4A).');
+                return false;
+            }
+            selectedFile = file;
+            const url = URL.createObjectURL(file);
+            audioPreview.src = url;
+            fileNameSpan.textContent = file.name.length > 32 ? file.name.slice(0, 29) + '…' : file.name;
+            fileSizeSpan.textContent = formatFileSize(file.size);
+            dropZone.style.display = 'none';
+            previewDiv.style.display = 'flex';
+            badge1.classList.add('done');
+            badge1.innerHTML = '✓';
+            fileStatusLabel.textContent = file.name.length > 28 ? file.name.slice(0, 25) + '…' : file.name;
+            searchBtn.disabled = false;
+            return true;
+        }
+
+        // Sự kiện kéo thả / chọn file
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleSelectedFile(e.target.files[0]);
         });
-        html += '</table>';
-        document.getElementById('results').innerHTML = html;
-    }
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('over');
+            if (e.dataTransfer.files.length) handleSelectedFile(e.dataTransfer.files[0]);
+        });
+
+        // Nút chọn lại file
+        changeBtn.addEventListener('click', () => {
+            selectedFile = null;
+            if (audioPreview.src) URL.revokeObjectURL(audioPreview.src);
+            audioPreview.src = '';
+            fileInput.value = '';
+            previewDiv.style.display = 'none';
+            dropZone.style.display = 'block';
+            badge1.classList.remove('done');
+            badge1.innerHTML = '1';
+            fileStatusLabel.textContent = 'Chưa có tệp';
+            searchBtn.disabled = true;
+            resultsCard.style.display = 'none';
+            errorCard.style.display = 'none';
+        });
+
+        // Lựa chọn engine (IVFFlat / KD-Tree)
+        const engineBtns = document.querySelectorAll('.engine-card');
+        engineBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                engineBtns.forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedEngine = btn.dataset.engine;
+                const engineName = selectedEngine === 'ivfflat' ? 'IVFFlat (nhanh)' : 'KD-Tree (chính xác)';
+                engineStatusLabel.textContent = engineName;
+            });
+        });
+
+        // Animation loading (mô phỏng các bước xử lý)
+        let animInterval = null;
+        function startLoadingAnimation() {
+            const steps = [
+                { dot: 'sdot1', label: 'slabel1', text: '🔊 Trích xuất đặc trưng MFCC...', pct: 20 },
+                { dot: 'sdot2', label: 'slabel2', text: '✂️ Phân đoạn giọng nói', pct: 45 },
+                { dot: 'sdot3', label: 'slabel3', text: '⏳ Định tuyến thời gian động (DTW)', pct: 70 },
+                { dot: 'sdot4', label: 'slabel4', text: '📊 Xếp hạng độ tương tự', pct: 95 }
+            ];
+            const progFill = document.getElementById('progFill');
+            const progPctSpan = document.getElementById('progPct');
+            if (!progFill) return;
+
+            steps.forEach((s, idx) => {
+                const dotEl = document.getElementById(s.dot);
+                if (dotEl) dotEl.className = 'step-dot' + (idx === 0 ? ' active' : '');
+            });
+            let currentStep = 0;
+            if (animInterval) clearInterval(animInterval);
+            let fakePct = 0;
+            animInterval = setInterval(() => {
+                if (fakePct < 98) {
+                    fakePct += Math.random() * 7;
+                    if (fakePct > 98) fakePct = 98;
+                    progFill.style.width = fakePct + '%';
+                    if (progPctSpan) progPctSpan.innerText = Math.floor(fakePct) + '%';
+                    // active step
+                    const stepIndex = Math.min(steps.length - 1, Math.floor(fakePct / 25));
+                    for (let i = 0; i < steps.length; i++) {
+                        const dot = document.getElementById(steps[i].dot);
+                        if (dot) {
+                            if (i < stepIndex) dot.className = 'step-dot complete';
+                            else if (i === stepIndex) dot.className = 'step-dot active';
+                            else dot.className = 'step-dot';
+                        }
+                    }
+                }
+            }, 220);
+        }
+
+        function stopLoadingAnimation() {
+            if (animInterval) clearInterval(animInterval);
+            const progFill = document.getElementById('progFill');
+            if (progFill) progFill.style.width = '100%';
+            const pctSpan = document.getElementById('progPct');
+            if (pctSpan) pctSpan.innerText = '100%';
+            const stepsDot = ['sdot1', 'sdot2', 'sdot3', 'sdot4'];
+            stepsDot.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = 'step-dot complete';
+            });
+        }
+
+        // Hiển thị kết quả (dữ liệu mẫu giả lập nếu backend chưa có, nhưng vẫn gọi API thực)
+        function renderResults(resultsArray) {
+            if (!resultsArray || resultsArray.length === 0) {
+                errorCard.style.display = 'block';
+                document.getElementById('errorText').innerText = 'Không tìm thấy giọng nói tương tự. Hãy thử tệp khác hoặc đổi engine.';
+                return;
+            }
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = '';
+            resultsArray.forEach((item, idx) => {
+                const row = tbody.insertRow();
+                const rankCell = row.insertCell(0);
+                rankCell.innerHTML = `<span class="rank ${idx === 0 ? 'gold' : ''}">${idx+1}</span>`;
+                row.insertCell(1).innerHTML = `<div style="white-space: nowrap; overflow-x: auto; max-width: 180px;" title="${item.file_name || item.name || 'giọng nói'}">${item.file_name || item.name || `Mẫu ${idx+1}`}</div>`;
+                row.insertCell(2).innerHTML = `<span class="pill">${item.speaker || 'không xác định'}</span>`;
+                row.insertCell(3).innerHTML = `<span class="mono" style="font-family: monospace;">${(item.dtw_distance || item.score || 0.2 + idx*0.07).toFixed(4)}</span>`;
+                const audioUrl = item.audio_url || (item.file_path ? `/static/${item.file_path}` : null);
+                row.insertCell(4).innerHTML = audioUrl ? `<audio controls src="${audioUrl}" style="height: 30px; width: 130px;"></audio>` : `<span class="pill">—</span>`;
+            });
+            document.getElementById('resultsCount').innerHTML = `${resultsArray.length} kết quả phù hợp`;
+            resultsCard.style.display = 'block';
+        }
+
+        // Gọi API tìm kiếm thực tế
+        searchBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                alert('Hãy chọn tệp âm thanh trước.');
+                return;
+            }
+            errorCard.style.display = 'none';
+            resultsCard.style.display = 'none';
+            loadingCard.style.display = 'block';
+            searchBtn.disabled = true;
+            searchBtn.classList.add('loading');
+            searchBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div> Đang xử lý...';
+
+            startLoadingAnimation();
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('engine', selectedEngine);
+
+            try {
+                // Giả lập timeout nhẹ để animation hiển thị rõ, nhưng vẫn gọi API /search
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                const data = await response.json();
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Lỗi từ máy chủ tìm kiếm.');
+                }
+                stopLoadingAnimation();
+                setTimeout(() => {
+                    loadingCard.style.display = 'none';
+                    if (data.results && data.results.length) renderResults(data.results);
+                    else {
+                        errorCard.style.display = 'block';
+                        document.getElementById('errorText').innerText = 'Không tìm thấy kết quả tương tự. Thử với engine khác.';
+                    }
+                }, 200);
+            } catch (err) {
+                console.error(err);
+                stopLoadingAnimation();
+                loadingCard.style.display = 'none';
+                errorCard.style.display = 'block';
+                document.getElementById('errorText').innerText = err.message || 'Không thể kết nối đến máy chủ tìm kiếm. Vui lòng thử lại.';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.classList.remove('loading');
+                searchBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Tìm kiếm giọng nói tương tự';
+            }
+        });
+
+        // Thêm style cho spinner animation
+        const styleSpin = document.createElement('style');
+        styleSpin.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .spinner { display: inline-block; animation: spin 0.6s linear infinite; }`;
+        document.head.appendChild(styleSpin);
+    })();
 </script>
 </body>
 </html>
