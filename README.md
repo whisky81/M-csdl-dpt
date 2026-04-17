@@ -1,2 +1,3 @@
 - Chi tiết tại  [README.md](./v2/README.md)
 - tổng quan cách hoạt động [workflow.md](./workflow.md)
+- `lưu ý`: mọi thao tác đều thực hiện trong thư mục v2
