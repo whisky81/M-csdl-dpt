@@ -1,4 +1,3 @@
-Dưới đây là bản dịch sang tiếng Việt và phần **giải tích chi tiết hơn** (phân tích sâu về lý thuyết, ý nghĩa vật lý, tại sao chọn tham số, v.v.) được lồng ghép trực tiếp vào từng phần. Cấu trúc, công thức, bảng biểu và mã nguồn giữ nguyên, chỉ bổ sung các đoạn **Giải tích** nổi bật.
 
 ---
 
@@ -618,5 +617,3 @@ Kết quả được sắp xếp theo DTW tăng dần; top 5 được trả về
 *Phiên bản: v2*
 
 --- 
-
-**Giải tích tổng kết:** Hệ thống này là một ví dụ điển hình về ứng dụng xử lý tín hiệu âm thanh, học máy (trích xuất đặc trưng) và truy xuất thông tin (ANN + DTW) vào bài toán tìm kiếm giọng nói. Điểm mạnh là thiết kế hai giai đoạn đảm bảo cả tốc độ và độ chính xác. Điểm yếu chính là bảo mật và khả năng mở rộng khi dữ liệu lớn hơn (cần phân tán). Các tham số như FMIN/FMAX, số lượng MFCC, số lượng danh sách IVFFlat được chọn dựa trên lý thuyết về giọng nói và thực tiễn của pgvector.

@@ -1,3 +1,4 @@
 - Chi tiết tại  [README.md](./v2/README.md)
 - tổng quan cách hoạt động [workflow.md](./workflow.md)
+- xem [understand.md](./understand.md) để hiểu rõ code base hơn
 - `lưu ý`: mọi thao tác đều thực hiện trong thư mục v2
