@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Tìm kiếm giọng nói tương tự</title>
+    <title>Tìm kiếm giọng nói nam tương tự</title>
     <style>
         * {
             box-sizing: border-box;
@@ -11,7 +11,6 @@
             padding: 0;
         }
 
-        /* Biến CSS – giao diện tối/ sáng tùy theo trình duyệt */
         :root {
             --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
             --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
@@ -67,11 +66,10 @@
             background: var(--color-background-primary);
             color: var(--color-text-primary);
             padding: 1.5rem 1rem;
-            max-width: 880px;
+            max-width: 960px;
             margin: 0 auto;
         }
 
-        /* Đường viền phân cách mỗi phần */
         .section-divider {
             margin: 1rem 0 0.5rem 0;
             border-top: 2px solid var(--color-border-secondary);
@@ -99,7 +97,6 @@
             border-radius: var(--border-radius-lg);
             margin-bottom: 20px;
             overflow: hidden;
-            transition: border 0.1s;
         }
 
         .card-header {
@@ -151,7 +148,6 @@
             padding: 20px;
         }
 
-        /* Dropzone */
         .drop-zone {
             border: 1.8px dashed var(--color-border-secondary);
             border-radius: var(--border-radius-md);
@@ -165,13 +161,6 @@
         .drop-zone:hover, .drop-zone.over {
             background: var(--color-background-tertiary);
             border-color: var(--color-border-primary);
-        }
-
-        .dz-icon {
-            width: 32px;
-            height: 32px;
-            margin: 0 auto 10px;
-            color: var(--color-text-tertiary);
         }
 
         .dz-text {
@@ -368,38 +357,43 @@
             font-size: 11px;
         }
 
-        hr {
-            margin: 20px 0 10px;
-            border-color: var(--color-border-tertiary);
+        /* Cột nghe thử rộng hơn */
+        .audio-preview-cell {
+            min-width: 200px;
+            width: auto;
+        }
+        .audio-preview-cell audio {
+            width: 100%;
+            min-width: 180px;
+            height: 34px;
         }
     </style>
 </head>
 <body>
 
-<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm kiếm độ tương tự giọng nói</h2>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm kiếm giọng nói đàn ông tương tự</h2>
 
-<p class="page-title">🎙️ Tìm kiếm giọng nói tương tự</p>
-<p class="page-sub">Tải tệp âm thanh, chọn công cụ tìm kiếm và hệ thống sẽ trả về những giọng nói gần giống nhất dựa trên DTW</p>
+<p class="page-title">Tìm kiếm giọng nói nam tương tự</p>
+<p class="page-sub">Tải tệp âm thanh giọng nam, chọn công cụ tìm kiếm và hệ thống sẽ trả về những giọng nói gần giống nhất dựa trên DTW</p>
 
 <!-- Phần 1: Tải tệp âm thanh -->
 <div class="card" id="card-file">
     <div class="card-header">
         <div class="step-badge" id="badge1">1</div>
-        <span class="card-title">📁 Tệp âm thanh đầu vào</span>
+        <span class="card-title">Tệp âm thanh đầu vào</span>
         <span class="card-desc" id="file-status-label">Chưa có tệp</span>
     </div>
     <div class="card-body">
         <div class="drop-zone" id="dropZone">
             <input type="file" accept="audio/*" id="fileInput">
-            <svg class="dz-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
             <p class="dz-text"><strong>Chọn tệp</strong> hoặc kéo thả vào đây</p>
-            <p class="dz-hint">Hỗ trợ MP3, WAV, OGG, M4A (tối đa 25 MB)</p>
+            <p class="dz-hint">Hỗ trợ MP3, WAV, OGG, M4A (tối đa 25 MB) · Giọng nam rõ ràng cho kết quả tốt nhất</p>
         </div>
         <div class="file-preview" id="preview" style="display:none">
             <div class="file-meta">
                 <span class="file-name" id="fileName">—</span>
                 <span class="file-size" id="fileSize">—</span>
-                <button class="change-btn" id="changeBtn">🔄 Chọn lại</button>
+                <button class="change-btn" id="changeBtn">Chọn lại</button>
             </div>
             <audio id="audioPreview" controls></audio>
         </div>
@@ -408,11 +402,11 @@
 
 <div class="section-divider"></div>
 
-<!-- Phần 2: Công cụ tìm kiếm (engine) -->
+<!-- Phần 2: Công cụ tìm kiếm -->
 <div class="card" id="card-engine">
     <div class="card-header">
         <div class="step-badge" id="badge2">2</div>
-        <span class="card-title">⚙️ Công cụ tìm kiếm</span>
+        <span class="card-title">Công cụ tìm kiếm</span>
         <span class="card-desc" id="engine-status-label">IVFFlat (nhanh)</span>
     </div>
     <div class="card-body">
@@ -420,15 +414,15 @@
             <button class="engine-card selected" data-engine="ivfflat" id="eng-ivfflat">
                 <div class="engine-name">IVFFlat</div>
                 <div class="engine-sub">Tìm kiếm gần đúng, tối ưu tốc độ</div>
-                <span class="engine-tag">⚡ Nhanh hơn</span>
+                <span class="engine-tag">Nhanh hơn</span>
             </button>
             <button class="engine-card" data-engine="kdtree" id="eng-kdtree">
                 <div class="engine-name">KD-Tree</div>
                 <div class="engine-sub">Tìm chính xác toàn bộ vector</div>
-                <span class="engine-tag">🎯 Chính xác hơn</span>
+                <span class="engine-tag">Chính xác hơn</span>
             </button>
         </div>
-        <p style="font-size: 12px; margin-top: 12px; color: var(--color-text-tertiary);">✔️ IVFFlat phù hợp với cơ sở dữ liệu lớn. KD-Tree cho độ chính xác cao hơn nhưng chậm hơn một chút.</p>
+        <p style="font-size: 12px; margin-top: 12px; color: var(--color-text-tertiary);">IVFFlat phù hợp với cơ sở dữ liệu lớn. KD-Tree cho độ chính xác cao hơn nhưng chậm hơn một chút.</p>
     </div>
 </div>
 
@@ -438,30 +432,29 @@
 <div class="card">
     <div class="card-header">
         <div class="step-badge" id="badge3">3</div>
-        <span class="card-title">🔍 Bắt đầu tìm kiếm</span>
+        <span class="card-title">Bắt đầu tìm kiếm</span>
     </div>
     <div class="card-body">
         <button class="search-btn" id="searchBtn" disabled>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Tìm kiếm giọng nói tương tự
         </button>
     </div>
 </div>
 
-<!-- Thanh trạng thái xử lý (loading) -->
+<!-- Thanh trạng thái xử lý -->
 <div class="card loading-card" id="loadingCard" style="display:none">
     <div class="card-header">
         <div class="spinner" style="width:16px;height:16px;border:2px solid var(--color-text-info);border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div>
-        <span class="card-title" style="color:var(--color-text-info)">🔄 Đang xử lý tệp âm thanh</span>
+        <span class="card-title" style="color:var(--color-text-info)">Đang xử lý tệp âm thanh</span>
         <span class="card-desc" id="etaLabel">khoảng 2–3 giây</span>
     </div>
     <div class="card-body">
         <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
         <div style="margin-top: 14px;" id="stepList">
-            <div class="step-item"><div class="step-dot active" id="sdot1"></div><span id="slabel1">🔊 Trích xuất đặc trưng MFCC...</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot2"></div><span id="slabel2">✂️ Phân đoạn giọng nói</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot3"></div><span id="slabel3">⏳ Định tuyến thời gian động (DTW)</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot4"></div><span id="slabel4">📊 Xếp hạng độ tương tự</span></div>
+            <div class="step-item"><div class="step-dot active" id="sdot1"></div><span id="slabel1">Trích xuất đặc trưng MFCC...</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot2"></div><span id="slabel2">Phân đoạn giọng nói</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot3"></div><span id="slabel3">Định tuyến thời gian động (DTW)</span></div>
+            <div class="step-item"><div class="step-dot" id="sdot4"></div><span id="slabel4">Xếp hạng độ tương tự</span></div>
         </div>
     </div>
 </div>
@@ -469,7 +462,7 @@
 <!-- Thông báo lỗi -->
 <div class="card error-card" id="errorCard" style="display:none; border-left: 3px solid var(--color-text-danger);">
     <div class="card-header">
-        <span class="card-title" style="color:var(--color-text-danger)">⚠️ Lỗi tìm kiếm</span>
+        <span class="card-title" style="color:var(--color-text-danger)">Lỗi tìm kiếm</span>
     </div>
     <div class="card-body"><p class="error-text" id="errorText"></p></div>
 </div>
@@ -478,13 +471,13 @@
 <div class="card" id="resultsCard" style="display:none">
     <div class="card-header">
         <div class="step-badge done" id="resultsBadge">✓</div>
-        <span class="card-title">🏆 Kết quả giọng nói tương tự</span>
+        <span class="card-title">Kết quả giọng nói tương tự</span>
         <span class="card-desc" id="resultsCount"></span>
     </div>
     <div class="card-body" style="padding:0">
         <table>
             <thead>
-                <tr><th>#</th><th>Tệp tham chiếu</th><th>Người nói</th><th>Khoảng cách DTW</th><th>Nghe thử</th></tr>
+                <tr><th>#</th><th>Tệp tham chiếu</th><th>Người nói</th><th>Khoảng cách DTW</th><th class="audio-preview-cell">Nghe thử</th></tr>
             </thead>
             <tbody id="resultsBody"></tbody>
         </table>
@@ -493,7 +486,6 @@
 
 <script>
     (function() {
-        // DOM elements
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const previewDiv = document.getElementById('preview');
@@ -506,22 +498,18 @@
         const errorCard = document.getElementById('errorCard');
         const resultsCard = document.getElementById('resultsCard');
         const badge1 = document.getElementById('badge1');
-        const badge2 = document.getElementById('badge2');
-        const badge3 = document.getElementById('badge3');
         const fileStatusLabel = document.getElementById('file-status-label');
         const engineStatusLabel = document.getElementById('engine-status-label');
 
         let selectedFile = null;
         let selectedEngine = 'ivfflat';
 
-        // ---- Helper: format kích thước ----
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             return (bytes / 1048576).toFixed(1) + ' MB';
         }
 
-        // Xử lý sau khi chọn file thành công
         function handleSelectedFile(file) {
             if (!file || !file.type.startsWith('audio/')) {
                 alert('Vui lòng chọn tệp âm thanh hợp lệ (MP3, WAV, OGG, M4A).');
@@ -541,7 +529,6 @@
             return true;
         }
 
-        // Sự kiện kéo thả / chọn file
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length) handleSelectedFile(e.target.files[0]);
         });
@@ -553,7 +540,6 @@
             if (e.dataTransfer.files.length) handleSelectedFile(e.dataTransfer.files[0]);
         });
 
-        // Nút chọn lại file
         changeBtn.addEventListener('click', () => {
             selectedFile = null;
             if (audioPreview.src) URL.revokeObjectURL(audioPreview.src);
@@ -569,7 +555,6 @@
             errorCard.style.display = 'none';
         });
 
-        // Lựa chọn engine (IVFFlat / KD-Tree)
         const engineBtns = document.querySelectorAll('.engine-card');
         engineBtns.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -581,14 +566,13 @@
             });
         });
 
-        // Animation loading (mô phỏng các bước xử lý)
         let animInterval = null;
         function startLoadingAnimation() {
             const steps = [
-                { dot: 'sdot1', label: 'slabel1', text: '🔊 Trích xuất đặc trưng MFCC...', pct: 20 },
-                { dot: 'sdot2', label: 'slabel2', text: '✂️ Phân đoạn giọng nói', pct: 45 },
-                { dot: 'sdot3', label: 'slabel3', text: '⏳ Định tuyến thời gian động (DTW)', pct: 70 },
-                { dot: 'sdot4', label: 'slabel4', text: '📊 Xếp hạng độ tương tự', pct: 95 }
+                { dot: 'sdot1', label: 'slabel1', pct: 20 },
+                { dot: 'sdot2', label: 'slabel2', pct: 45 },
+                { dot: 'sdot3', label: 'slabel3', pct: 70 },
+                { dot: 'sdot4', label: 'slabel4', pct: 95 }
             ];
             const progFill = document.getElementById('progFill');
             const progPctSpan = document.getElementById('progPct');
@@ -598,7 +582,6 @@
                 const dotEl = document.getElementById(s.dot);
                 if (dotEl) dotEl.className = 'step-dot' + (idx === 0 ? ' active' : '');
             });
-            let currentStep = 0;
             if (animInterval) clearInterval(animInterval);
             let fakePct = 0;
             animInterval = setInterval(() => {
@@ -607,7 +590,6 @@
                     if (fakePct > 98) fakePct = 98;
                     progFill.style.width = fakePct + '%';
                     if (progPctSpan) progPctSpan.innerText = Math.floor(fakePct) + '%';
-                    // active step
                     const stepIndex = Math.min(steps.length - 1, Math.floor(fakePct / 25));
                     for (let i = 0; i < steps.length; i++) {
                         const dot = document.getElementById(steps[i].dot);
@@ -634,7 +616,6 @@
             });
         }
 
-        // Hiển thị kết quả (dữ liệu mẫu giả lập nếu backend chưa có, nhưng vẫn gọi API thực)
         function renderResults(resultsArray) {
             if (!resultsArray || resultsArray.length === 0) {
                 errorCard.style.display = 'block';
@@ -647,17 +628,18 @@
                 const row = tbody.insertRow();
                 const rankCell = row.insertCell(0);
                 rankCell.innerHTML = `<span class="rank ${idx === 0 ? 'gold' : ''}">${idx+1}</span>`;
-                row.insertCell(1).innerHTML = `<div style="white-space: nowrap; overflow-x: auto; max-width: 180px;" title="${item.file_name || item.name || 'giọng nói'}">${item.file_name || item.name || `Mẫu ${idx+1}`}</div>`;
+                row.insertCell(1).innerHTML = `<div style="white-space: nowrap; overflow-x: auto; max-width: 200px;" title="${item.file_name || item.name || 'giọng nói'}">${item.file_name || item.name || `Mẫu ${idx+1}`}</div>`;
                 row.insertCell(2).innerHTML = `<span class="pill">${item.speaker || 'không xác định'}</span>`;
-                row.insertCell(3).innerHTML = `<span class="mono" style="font-family: monospace;">${(item.dtw_distance || item.score || 0.2 + idx*0.07).toFixed(4)}</span>`;
+                row.insertCell(3).innerHTML = `<span style="font-family: monospace;">${(item.dtw_distance || item.score || 0.2 + idx*0.07).toFixed(4)}</span>`;
                 const audioUrl = item.audio_url || (item.file_path ? `/static/${item.file_path}` : null);
-                row.insertCell(4).innerHTML = audioUrl ? `<audio controls src="${audioUrl}" style="height: 30px; width: 130px;"></audio>` : `<span class="pill">—</span>`;
+                const audioCell = row.insertCell(4);
+                audioCell.className = 'audio-preview-cell';
+                audioCell.innerHTML = audioUrl ? `<audio controls src="${audioUrl}" style="width:100%; min-width:180px; height:34px;"></audio>` : `<span class="pill">—</span>`;
             });
             document.getElementById('resultsCount').innerHTML = `${resultsArray.length} kết quả phù hợp`;
             resultsCard.style.display = 'block';
         }
 
-        // Gọi API tìm kiếm thực tế
         searchBtn.addEventListener('click', async () => {
             if (!selectedFile) {
                 alert('Hãy chọn tệp âm thanh trước.');
@@ -667,7 +649,6 @@
             resultsCard.style.display = 'none';
             loadingCard.style.display = 'block';
             searchBtn.disabled = true;
-            searchBtn.classList.add('loading');
             searchBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div> Đang xử lý...';
 
             startLoadingAnimation();
@@ -677,7 +658,6 @@
             formData.append('engine', selectedEngine);
 
             try {
-                // Giả lập timeout nhẹ để animation hiển thị rõ, nhưng vẫn gọi API /search
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 30000);
                 const response = await fetch('/search', {
@@ -707,12 +687,10 @@
                 document.getElementById('errorText').innerText = err.message || 'Không thể kết nối đến máy chủ tìm kiếm. Vui lòng thử lại.';
             } finally {
                 searchBtn.disabled = false;
-                searchBtn.classList.remove('loading');
-                searchBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Tìm kiếm giọng nói tương tự';
+                searchBtn.innerHTML = 'Tìm kiếm giọng nói tương tự';
             }
         });
 
-        // Thêm style cho spinner animation
         const styleSpin = document.createElement('style');
         styleSpin.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .spinner { display: inline-block; animation: spin 0.6s linear infinite; }`;
         document.head.appendChild(styleSpin);
