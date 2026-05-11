@@ -10,7 +10,7 @@
 5. Demo hệ thống và đánh giá kết quả đã đạt được.
 
 
-## notes, thông tin về demo hiện tại và yêu cầu  
+## tasks 
 1. số lượng file âm thanh trong cơ sở dữ liệu: 1329
 2. thời lượng của các file nằm trong khoảng [1.5, 32.65] (đơn vị giây)
     -> nó không match với yêu cầu 500 file âm thanh có cùng độ dài
@@ -24,5 +24,5 @@
     ```
     audio_file,speaker_id,speaker_name,speaker_gender,chapter_id,chapter_title,book_id,book_title,utterance_id,chapter_duration_minutes,duration_seconds,duration_minutes,duration_source,duration_diff_percent,transcript_word_count,transcript_word_count_actual,speaking_rate_words_per_sec,file_size_bytes,subset,transcript_sample,transcript_full
     ```
-- demo hiện tại có tạo ra list[vector(18)] (danh sách vector 18 chiều) -> tôi nghĩ nó chưa đủ vậy có bổ sung thêm gì nữa không
+
 

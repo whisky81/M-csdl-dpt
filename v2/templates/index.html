@@ -3,698 +3,472 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Tìm kiếm giọng nói nam tương tự</title>
+    <title>CSDL Tìm kiếm giọng nói</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
-            --color-text-primary: #1e1e2f;
-            --color-text-secondary: #5b5b6e;
-            --color-text-tertiary: #8e8ea0;
-            --color-text-info: #0066cc;
-            --color-text-success: #1e7b48;
-            --color-text-warning: #b45b0a;
-            --color-text-danger: #c72a2a;
-            --color-background-primary: #ffffff;
-            --color-background-secondary: #f5f5f8;
-            --color-background-tertiary: #eaeaef;
-            --color-background-info: #e8f0fe;
-            --color-background-success: #e0f2e9;
-            --color-background-warning: #fef5e6;
-            --color-background-danger: #feecec;
-            --color-border-secondary: #d0d0dd;
-            --color-border-tertiary: #e4e4ec;
-            --color-border-info: #99c2f0;
-            --color-border-success: #b3d9c4;
-            --color-border-danger: #f0b3b3;
-            --border-radius-md: 8px;
-            --border-radius-lg: 14px;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --color-text-primary: #ececf4;
-                --color-text-secondary: #a0a0b8;
-                --color-text-tertiary: #6c6c82;
-                --color-text-info: #6eb3ff;
-                --color-text-success: #7ddea6;
-                --color-text-warning: #ffbc6e;
-                --color-text-danger: #ff8a8a;
-                --color-background-primary: #15151f;
-                --color-background-secondary: #20202d;
-                --color-background-tertiary: #2c2c3a;
-                --color-background-info: #1a2a3a;
-                --color-background-success: #1a2e26;
-                --color-background-warning: #33200c;
-                --color-background-danger: #2e1c1c;
-                --color-border-secondary: #2f2f3e;
-                --color-border-tertiary: #262633;
-                --color-border-info: #2a4b6e;
-                --color-border-success: #2a5a3e;
-                --color-border-danger: #5e2a2a;
-            }
+            --c-text: #1e1e2f; --c-text2: #5b5b6e; --c-text3: #8e8ea0;
+            --c-bg: #ffffff; --c-bg2: #f5f5f8; --c-bg3: #eaeaef;
+            --c-accent: #2563eb; --c-accent-light: #dbeafe; --c-accent-dark: #1d4ed8;
+            --c-success: #16a34a; --c-success-bg: #dcfce7;
+            --c-warning: #f59e0b; --c-warning-bg: #fef3c7;
+            --c-danger: #dc2626; --c-danger-bg: #fee2e2;
+            --c-border: #d0d0dd; --c-border2: #e4e4ec;
+            --radius: 10px; --radius-sm: 6px;
         }
 
         body {
             font-family: var(--font-sans);
-            background: var(--color-background-primary);
-            color: var(--color-text-primary);
+            background: var(--c-bg);
+            color: var(--c-text);
             padding: 1.5rem 1rem;
-            max-width: 960px;
+            max-width: 1000px;
             margin: 0 auto;
         }
 
-        .section-divider {
-            margin: 1rem 0 0.5rem 0;
-            border-top: 2px solid var(--color-border-secondary);
-            opacity: 0.5;
-        }
+        h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.3px; }
+        .subtitle { font-size: 13px; color: var(--c-text2); margin-bottom: 1.8rem; border-left: 3px solid var(--c-accent); padding-left: 12px; }
 
-        .page-title {
-            font-size: 26px;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            margin-bottom: 4px;
+        /* Tabs */
+        .tabs { display: flex; gap: 2px; margin-bottom: 0; }
+        .tab-btn {
+            padding: 10px 20px; border: 1px solid var(--c-border);
+            background: var(--c-bg2); cursor: pointer; font-size: 14px;
+            font-weight: 500; border-radius: var(--radius) var(--radius) 0 0;
+            color: var(--c-text2); transition: all .15s;
+            border-bottom: none;
         }
+        .tab-btn.active { background: var(--c-bg); color: var(--c-accent); border-color: var(--c-border); font-weight: 600; }
+        .tab-btn:hover:not(.active) { background: var(--c-bg3); }
 
-        .page-sub {
-            font-size: 13px;
-            color: var(--color-text-secondary);
-            margin-bottom: 1.8rem;
-            border-left: 3px solid var(--color-border-info);
-            padding-left: 12px;
-        }
+        .tab-panel { display: none; border: 1px solid var(--c-border); border-radius: 0 var(--radius) var(--radius) var(--radius); padding: 20px; background: var(--c-bg); margin-bottom: 18px; }
+        .tab-panel.active { display: block; }
 
-        .card {
-            background: var(--color-background-primary);
-            border: 1px solid var(--color-border-secondary);
-            border-radius: var(--border-radius-lg);
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
+        /* Cards */
+        .card { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+        .card-header { padding: 12px 16px; border-bottom: 1px solid var(--c-border2); background: var(--c-bg2); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .card-body { padding: 16px; }
 
-        .card-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--color-border-tertiary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--color-background-secondary);
+        /* Form elements */
+        label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--c-text2); }
+        input[type="text"], input[type="number"], select {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--c-border);
+            border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font-sans);
+            background: var(--c-bg); color: var(--c-text); margin-bottom: 10px;
         }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none; border-color: var(--c-accent); box-shadow: 0 0 0 3px var(--c-accent-light);
+        }
+        input[type="file"] { font-size: 14px; margin-bottom: 10px; }
 
-        .step-badge {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: var(--color-background-tertiary);
-            border: 1px solid var(--color-border-secondary);
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--color-text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
+        .row { display: flex; gap: 12px; flex-wrap: wrap; }
+        .row > * { flex: 1; min-width: 120px; }
 
-        .step-badge.done {
-            background: var(--color-background-success);
-            border-color: var(--color-border-success);
-            color: var(--color-text-success);
+        button {
+            background: var(--c-accent); color: #fff; border: none; padding: 10px 24px;
+            border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: background .15s; font-family: var(--font-sans);
         }
+        button:hover { background: var(--c-accent-dark); }
+        button:disabled { opacity: .6; cursor: not-allowed; }
 
-        .card-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-        }
+        .btn-secondary { background: var(--c-bg2); color: var(--c-text); border: 1px solid var(--c-border); }
+        .btn-secondary:hover { background: var(--c-bg3); }
 
-        .card-desc {
-            font-size: 12px;
-            color: var(--color-text-tertiary);
-            margin-left: auto;
-            background: var(--color-background-tertiary);
-            padding: 3px 9px;
-            border-radius: 30px;
-        }
+        /* Results table */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 8px 10px; background: var(--c-bg2); border-bottom: 2px solid var(--c-border); font-weight: 600; color: var(--c-text2); }
+        td { padding: 8px 10px; border-bottom: 1px solid var(--c-border2); }
+        tr:hover td { background: var(--c-bg2); }
 
-        .card-body {
-            padding: 20px;
-        }
+        .rank { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--c-bg3); font-weight: 700; font-size: 12px; color: var(--c-text2); }
+        .rank.gold { background: #fbbf24; color: #78350f; }
 
-        .drop-zone {
-            border: 1.8px dashed var(--color-border-secondary);
-            border-radius: var(--border-radius-md);
-            padding: 28px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: var(--color-background-secondary);
-        }
+        .pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; background: var(--c-bg3); color: var(--c-text2); }
+        audio { width: 100%; height: 32px; min-width: 160px; }
 
-        .drop-zone:hover, .drop-zone.over {
-            background: var(--color-background-tertiary);
-            border-color: var(--color-border-primary);
-        }
+        /* Intermediate steps */
+        .steps { margin-top: 12px; }
+        .step { padding: 8px 12px; margin-bottom: 4px; border-radius: var(--radius-sm); font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .step.info { background: var(--c-accent-light); color: var(--c-accent-dark); }
+        .step.success { background: var(--c-success-bg); color: var(--c-success); }
+        .step.warn { background: var(--c-warning-bg); color: #92400e; }
+        .step-label { font-weight: 600; }
+        .step-value { font-family: var(--font-mono); }
 
-        .dz-text {
-            font-size: 14px;
-            color: var(--color-text-secondary);
-        }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .badge-info { background: var(--c-accent-light); color: var(--c-accent); }
+        .badge-success { background: var(--c-success-bg); color: var(--c-success); }
 
-        .dz-text strong {
-            color: var(--color-text-primary);
-        }
+        .loading-spin { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--c-border); border-top-color: var(--c-accent); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        .dz-hint {
-            font-size: 11px;
-            color: var(--color-text-tertiary);
-            margin-top: 6px;
-        }
+        .pagination { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 13px; color: var(--c-text2); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+        .stat-item { padding: 10px 14px; background: var(--c-bg2); border-radius: var(--radius-sm); text-align: center; }
+        .stat-value { font-size: 22px; font-weight: 700; color: var(--c-accent); }
+        .stat-label { font-size: 11px; color: var(--c-text3); margin-top: 2px; }
 
-        .file-preview {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .error-box { background: var(--c-danger-bg); color: var(--c-danger); padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; }
 
-        .file-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            background: var(--color-background-secondary);
-            border-radius: var(--border-radius-md);
-            border: 1px solid var(--color-border-tertiary);
-        }
-
-        .file-name {
-            font-size: 14px;
-            font-weight: 500;
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .change-btn {
-            font-size: 12px;
-            background: none;
-            border: none;
-            color: var(--color-text-info);
-            cursor: pointer;
-            padding: 4px 10px;
-            border-radius: 30px;
-        }
-
-        audio {
-            width: 100%;
-            border-radius: var(--border-radius-md);
-            height: 36px;
-        }
-
-        .engine-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .engine-card {
-            background: var(--color-background-secondary);
-            border: 1px solid var(--color-border-secondary);
-            border-radius: var(--border-radius-md);
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.12s;
-            text-align: left;
-        }
-
-        .engine-card.selected {
-            border: 2px solid var(--color-border-info);
-            background: var(--color-background-info);
-        }
-
-        .engine-name {
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .engine-tag {
-            display: inline-block;
-            margin-top: 8px;
-            font-size: 11px;
-            background: var(--color-background-tertiary);
-            padding: 2px 8px;
-            border-radius: 30px;
-        }
-
-        .search-btn {
-            width: 100%;
-            padding: 12px;
-            font-weight: 600;
-            border: 1px solid var(--color-border-secondary);
-            border-radius: var(--border-radius-md);
-            background: var(--color-background-primary);
-            cursor: pointer;
-            transition: 0.1s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 15px;
-        }
-
-        .search-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .loading-card {
-            border-left: 3px solid var(--color-border-info);
-        }
-
-        .progress-track {
-            height: 6px;
-            background: var(--color-background-tertiary);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--color-text-info);
-            width: 0%;
-        }
-
-        .step-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-        }
-
-        .step-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--color-border-secondary);
-        }
-
-        .step-dot.active {
-            background: var(--color-text-info);
-            box-shadow: 0 0 0 2px var(--color-background-info);
-        }
-
-        .step-dot.complete {
-            background: var(--color-text-success);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            font-size: 11px;
-            padding: 12px 12px;
-            border-bottom: 1px solid var(--color-border-secondary);
-            color: var(--color-text-tertiary);
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--color-border-tertiary);
-            font-size: 13px;
-        }
-
-        .rank {
-            display: inline-flex;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: var(--color-background-tertiary);
-            align-items: center;
-            justify-content: center;
-            font-weight: 500;
-        }
-
-        .rank.gold {
-            background: var(--color-background-warning);
-            color: var(--color-text-warning);
-        }
-
-        .pill {
-            background: var(--color-background-tertiary);
-            padding: 2px 8px;
-            border-radius: 30px;
-            font-size: 11px;
-        }
-
-        /* Cột nghe thử rộng hơn */
-        .audio-preview-cell {
-            min-width: 200px;
-            width: auto;
-        }
-        .audio-preview-cell audio {
-            width: 100%;
-            min-width: 180px;
-            height: 34px;
+        @media (max-width: 640px) {
+            body { padding: 1rem .5rem; }
+            .row { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Tìm kiếm giọng nói đàn ông tương tự</h2>
+<h1>CSDL Tìm kiếm giọng nói</h1>
+<p class="subtitle">Hệ thống lưu trữ và tìm kiếm giọng nói dựa trên trích xuất đặc trưng âm thanh 18 chiều + DTW</p>
 
-<p class="page-title">Tìm kiếm giọng nói nam tương tự</p>
-<p class="page-sub">Tải tệp âm thanh giọng nam, chọn công cụ tìm kiếm và hệ thống sẽ trả về những giọng nói gần giống nhất dựa trên DTW</p>
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('audio')">Tìm kiếm giọng nói</button>
+    <button class="tab-btn" onclick="switchTab('metadata')">Tìm kiếm Metadata</button>
+    <button class="tab-btn" onclick="switchTab('stats')">Thống kê CSDL</button>
+</div>
 
-<!-- Phần 1: Tải tệp âm thanh -->
-<div class="card" id="card-file">
-    <div class="card-header">
-        <div class="step-badge" id="badge1">1</div>
-        <span class="card-title">Tệp âm thanh đầu vào</span>
-        <span class="card-desc" id="file-status-label">Chưa có tệp</span>
-    </div>
-    <div class="card-body">
-        <div class="drop-zone" id="dropZone">
-            <input type="file" accept="audio/*" id="fileInput">
-            <p class="dz-text"><strong>Chọn tệp</strong> hoặc kéo thả vào đây</p>
-            <p class="dz-hint">Hỗ trợ MP3, WAV, OGG, M4A (tối đa 25 MB) · Giọng nam rõ ràng cho kết quả tốt nhất</p>
-        </div>
-        <div class="file-preview" id="preview" style="display:none">
-            <div class="file-meta">
-                <span class="file-name" id="fileName">—</span>
-                <span class="file-size" id="fileSize">—</span>
-                <button class="change-btn" id="changeBtn">Chọn lại</button>
+<!-- Tab 1: Audio Search -->
+<div id="tab-audio" class="tab-panel active">
+    <div class="card">
+        <div class="card-header">Tải file âm thanh</div>
+        <div class="card-body">
+            <input type="file" id="audioFile" accept=".flac,.wav,.mp3">
+            <div class="row">
+                <div>
+                    <label>Engine tìm kiếm</label>
+                    <select id="engine">
+                        <option value="ivfflat">IVFFlat (nhanh, gần đúng)</option>
+                        <option value="kdtree">KD-Tree (chính xác)</option>
+                    </select>
+                </div>
             </div>
-            <audio id="audioPreview" controls></audio>
+            <button id="searchBtn" style="margin-top:8px;">Tìm kiếm giọng nói tương tự</button>
+        </div>
+    </div>
+
+    <!-- Intermediate Steps -->
+    <div class="card" id="stepsCard" style="display:none;">
+        <div class="card-header">Kết quả trung gian</div>
+        <div class="card-body">
+            <div class="steps" id="stepsContainer"></div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card" id="resultsCard" style="display:none;">
+        <div class="card-header">
+            Kết quả tìm kiếm
+            <span class="badge badge-info" id="resultsCount" style="margin-left:8px;"></span>
+        </div>
+        <div class="card-body" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>File</th><th>Người nói</th><th>DTW</th><th>Duration</th><th>Nghe</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="card" id="loadingCard" style="display:none;">
+        <div class="card-body" style="text-align:center; padding:32px;">
+            <div class="loading-spin"></div>
+            <p style="margin-top:12px; color:var(--c-text2); font-size:14px;">Đang xử lý... Vui lòng chờ trong giây lát.</p>
+        </div>
+    </div>
+
+    <!-- Error -->
+    <div class="card" id="errorCard" style="display:none;">
+        <div class="card-body"><div class="error-box" id="errorText"></div></div>
+    </div>
+</div>
+
+<!-- Tab 2: Metadata Search -->
+<div id="tab-metadata" class="tab-panel">
+    <div class="card">
+        <div class="card-header">Bộ lọc Metadata</div>
+        <div class="card-body">
+            <div class="row">
+                <div>
+                    <label>Tên người nói</label>
+                    <input type="text" id="metaSpeaker" placeholder="vd: John">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <label>Độ dài tối thiểu (s)</label>
+                    <input type="number" id="metaDurMin" placeholder="vd: 4" step="0.1">
+                </div>
+                <div>
+                    <label>Độ dài tối đa (s)</label>
+                    <input type="number" id="metaDurMax" placeholder="vd: 7" step="0.1">
+                </div>
+                <div>
+                    <label>Số từ tối thiểu</label>
+                    <input type="number" id="metaWcMin" placeholder="vd: 5">
+                </div>
+                <div>
+                    <label>Số từ tối đa</label>
+                    <input type="number" id="metaWcMax" placeholder="vd: 50">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <label>Kích thước file tối thiểu (bytes)</label>
+                    <input type="number" id="metaFsMin" placeholder="vd: 50000">
+                </div>
+                <div>
+                    <label>Kích thước file tối đa (bytes)</label>
+                    <input type="number" id="metaFsMax" placeholder="vd: 500000">
+                </div>
+            </div>
+            <button id="metaSearchBtn" style="margin-top:8px;">Tìm kiếm Metadata</button>
+            <button class="btn-secondary" id="metaClearBtn" style="margin-left:8px;">Xoá bộ lọc</button>
+        </div>
+    </div>
+
+    <!-- Meta Results -->
+    <div class="card" id="metaResultsCard" style="display:none;">
+        <div class="card-header">
+            Kết quả Metadata
+            <span class="badge badge-info" id="metaResultsCount" style="margin-left:8px;"></span>
+        </div>
+        <div class="card-body" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>File</th><th>Người nói</th><th>Duration (s)</th><th>Số từ</th><th>Size (KB)</th><th>Nghe</th>
+                    </tr>
+                </thead>
+                <tbody id="metaResultsBody"></tbody>
+            </table>
+            <div class="pagination" id="metaPagination"></div>
         </div>
     </div>
 </div>
 
-<div class="section-divider"></div>
-
-<!-- Phần 2: Công cụ tìm kiếm -->
-<div class="card" id="card-engine">
-    <div class="card-header">
-        <div class="step-badge" id="badge2">2</div>
-        <span class="card-title">Công cụ tìm kiếm</span>
-        <span class="card-desc" id="engine-status-label">IVFFlat (nhanh)</span>
-    </div>
-    <div class="card-body">
-        <div class="engine-grid">
-            <button class="engine-card selected" data-engine="ivfflat" id="eng-ivfflat">
-                <div class="engine-name">IVFFlat</div>
-                <div class="engine-sub">Tìm kiếm gần đúng, tối ưu tốc độ</div>
-                <span class="engine-tag">Nhanh hơn</span>
-            </button>
-            <button class="engine-card" data-engine="kdtree" id="eng-kdtree">
-                <div class="engine-name">KD-Tree</div>
-                <div class="engine-sub">Tìm chính xác toàn bộ vector</div>
-                <span class="engine-tag">Chính xác hơn</span>
-            </button>
+<!-- Tab 3: Stats -->
+<div id="tab-stats" class="tab-panel">
+    <div class="card">
+        <div class="card-header">Thống kê cơ sở dữ liệu</div>
+        <div class="card-body">
+            <div class="stats-grid" id="statsGrid">
+                <div style="text-align:center; padding:20px; color:var(--c-text3);">Đang tải...</div>
+            </div>
+            <div style="margin-top:16px;">
+                <strong style="font-size:14px;">Top 20 người nói có nhiều file nhất:</strong>
+                <div id="topSpeakers" style="margin-top:8px; font-size:13px;"></div>
+            </div>
         </div>
-        <p style="font-size: 12px; margin-top: 12px; color: var(--color-text-tertiary);">IVFFlat phù hợp với cơ sở dữ liệu lớn. KD-Tree cho độ chính xác cao hơn nhưng chậm hơn một chút.</p>
-    </div>
-</div>
-
-<div class="section-divider"></div>
-
-<!-- Phần 3: Thực thi tìm kiếm -->
-<div class="card">
-    <div class="card-header">
-        <div class="step-badge" id="badge3">3</div>
-        <span class="card-title">Bắt đầu tìm kiếm</span>
-    </div>
-    <div class="card-body">
-        <button class="search-btn" id="searchBtn" disabled>
-            Tìm kiếm giọng nói tương tự
-        </button>
-    </div>
-</div>
-
-<!-- Thanh trạng thái xử lý -->
-<div class="card loading-card" id="loadingCard" style="display:none">
-    <div class="card-header">
-        <div class="spinner" style="width:16px;height:16px;border:2px solid var(--color-text-info);border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div>
-        <span class="card-title" style="color:var(--color-text-info)">Đang xử lý tệp âm thanh</span>
-        <span class="card-desc" id="etaLabel">khoảng 2–3 giây</span>
-    </div>
-    <div class="card-body">
-        <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-        <div style="margin-top: 14px;" id="stepList">
-            <div class="step-item"><div class="step-dot active" id="sdot1"></div><span id="slabel1">Trích xuất đặc trưng MFCC...</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot2"></div><span id="slabel2">Phân đoạn giọng nói</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot3"></div><span id="slabel3">Định tuyến thời gian động (DTW)</span></div>
-            <div class="step-item"><div class="step-dot" id="sdot4"></div><span id="slabel4">Xếp hạng độ tương tự</span></div>
-        </div>
-    </div>
-</div>
-
-<!-- Thông báo lỗi -->
-<div class="card error-card" id="errorCard" style="display:none; border-left: 3px solid var(--color-text-danger);">
-    <div class="card-header">
-        <span class="card-title" style="color:var(--color-text-danger)">Lỗi tìm kiếm</span>
-    </div>
-    <div class="card-body"><p class="error-text" id="errorText"></p></div>
-</div>
-
-<!-- Kết quả trả về -->
-<div class="card" id="resultsCard" style="display:none">
-    <div class="card-header">
-        <div class="step-badge done" id="resultsBadge">✓</div>
-        <span class="card-title">Kết quả giọng nói tương tự</span>
-        <span class="card-desc" id="resultsCount"></span>
-    </div>
-    <div class="card-body" style="padding:0">
-        <table>
-            <thead>
-                <tr><th>#</th><th>Tệp tham chiếu</th><th>Người nói</th><th>Khoảng cách DTW</th><th class="audio-preview-cell">Nghe thử</th></tr>
-            </thead>
-            <tbody id="resultsBody"></tbody>
-        </table>
     </div>
 </div>
 
 <script>
-    (function() {
-        const fileInput = document.getElementById('fileInput');
-        const dropZone = document.getElementById('dropZone');
-        const previewDiv = document.getElementById('preview');
-        const audioPreview = document.getElementById('audioPreview');
-        const fileNameSpan = document.getElementById('fileName');
-        const fileSizeSpan = document.getElementById('fileSize');
-        const searchBtn = document.getElementById('searchBtn');
-        const changeBtn = document.getElementById('changeBtn');
-        const loadingCard = document.getElementById('loadingCard');
-        const errorCard = document.getElementById('errorCard');
-        const resultsCard = document.getElementById('resultsCard');
-        const badge1 = document.getElementById('badge1');
-        const fileStatusLabel = document.getElementById('file-status-label');
-        const engineStatusLabel = document.getElementById('engine-status-label');
+// ===================================================================
+//  TAB SWITCHING
+// ===================================================================
+function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'stats') loadStats();
+}
 
-        let selectedFile = null;
-        let selectedEngine = 'ivfflat';
+// ===================================================================
+//  AUDIO SIMILARITY SEARCH
+// ===================================================================
+let selectedFile = null;
+document.getElementById('audioFile').addEventListener('change', e => { selectedFile = e.target.files[0]; });
 
-        function formatFileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
+function renderIntermediate(steps) {
+    const container = document.getElementById('stepsContainer');
+    const items = [
+        { label: 'Số segment query', value: steps.query_segments_count, cls: 'info' },
+        { label: 'Số chiều vector', value: steps.query_vector_dim, cls: 'info' },
+        { label: 'Engine', value: steps.engine, cls: 'info' },
+        { label: 'Tổng segment khớp', value: steps.total_segment_matches, cls: 'info' },
+        { label: 'Segment khớp/query', value: (steps.per_segment_match_count || []).join(', '), cls: 'info' },
+        { label: 'Candidate files (sau lọc)', value: steps.candidate_files_count, cls: steps.candidate_files_count > 0 ? 'success' : 'warn' },
+        { label: 'DTW đã tính', value: steps.dtw_computed, cls: steps.dtw_computed > 0 ? 'success' : 'warn' },
+        { label: 'Top K trả về', value: steps.top_k, cls: 'success' },
+    ];
+
+    if (steps.dtw_details && steps.dtw_details.length > 0) {
+        items.push({ label: 'DTW chi tiết (top)', value: steps.dtw_details.map(d => `F${d.file_id}: ${d.dtw_distance}`).join(' | '), cls: 'success' });
+    }
+
+    container.innerHTML = items.map(i =>
+        `<div class="step ${i.cls}"><span class="step-label">${i.label}</span><span class="step-value">${i.value}</span></div>`
+    ).join('');
+    document.getElementById('stepsCard').style.display = 'block';
+}
+
+function renderResults(data) {
+    const tbody = document.getElementById('resultsBody');
+    tbody.innerHTML = data.map((item, idx) => `
+        <tr>
+            <td><span class="rank ${idx === 0 ? 'gold' : ''}">${idx+1}</span></td>
+            <td title="${item.file_name}">${item.file_name}</td>
+            <td><span class="pill">${item.speaker || 'unknown'}</span></td>
+            <td style="font-family:monospace;">${(item.dtw_distance || 0).toFixed(4)}</td>
+            <td>${(item.duration || 0).toFixed(1)}s</td>
+            <td>${item.audio_url ? `<audio controls src="${item.audio_url}"></audio>` : '—'}</td>
+        </tr>
+    `).join('');
+    document.getElementById('resultsCount').innerHTML = `${data.length} kết quả`;
+    document.getElementById('resultsCard').style.display = 'block';
+}
+
+document.getElementById('searchBtn').addEventListener('click', async () => {
+    if (!selectedFile) { alert('Hãy chọn file âm thanh trước.'); return; }
+
+    const errorCard = document.getElementById('errorCard');
+    const resultsCard = document.getElementById('resultsCard');
+    const loadingCard = document.getElementById('loadingCard');
+    const stepsCard = document.getElementById('stepsCard');
+
+    errorCard.style.display = 'none';
+    resultsCard.style.display = 'none';
+    stepsCard.style.display = 'none';
+    loadingCard.style.display = 'block';
+
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spin"></span> Đang xử lý...';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('engine', document.getElementById('engine').value);
+
+    try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 60000);
+        const resp = await fetch('/search', { method: 'POST', body: formData, signal: ctrl.signal });
+        clearTimeout(t);
+        const data = await resp.json();
+        loadingCard.style.display = 'none';
+
+        if (!resp.ok || data.error) throw new Error(data.error || 'Lỗi server');
+
+        if (data.intermediate) renderIntermediate(data.intermediate);
+        if (data.results && data.results.length) renderResults(data.results);
+        else {
+            errorCard.style.display = 'block';
+            document.getElementById('errorText').innerText = 'Không tìm thấy kết quả phù hợp.';
         }
+    } catch (err) {
+        loadingCard.style.display = 'none';
+        errorCard.style.display = 'block';
+        document.getElementById('errorText').innerText = err.message || 'Lỗi kết nối.';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Tìm kiếm giọng nói tương tự';
+    }
+});
 
-        function handleSelectedFile(file) {
-            if (!file || !file.type.startsWith('audio/')) {
-                alert('Vui lòng chọn tệp âm thanh hợp lệ (MP3, WAV, OGG, M4A).');
-                return false;
-            }
-            selectedFile = file;
-            const url = URL.createObjectURL(file);
-            audioPreview.src = url;
-            fileNameSpan.textContent = file.name.length > 32 ? file.name.slice(0, 29) + '…' : file.name;
-            fileSizeSpan.textContent = formatFileSize(file.size);
-            dropZone.style.display = 'none';
-            previewDiv.style.display = 'flex';
-            badge1.classList.add('done');
-            badge1.innerHTML = '✓';
-            fileStatusLabel.textContent = file.name.length > 28 ? file.name.slice(0, 25) + '…' : file.name;
-            searchBtn.disabled = false;
-            return true;
-        }
+// ===================================================================
+//  METADATA SEARCH
+// ===================================================================
+let metaOffset = 0;
+document.getElementById('metaSearchBtn').addEventListener('click', () => { metaOffset = 0; doMetaSearch(); });
+document.getElementById('metaClearBtn').addEventListener('click', () => {
+    ['metaSpeaker','metaDurMin','metaDurMax','metaWcMin','metaWcMax','metaFsMin','metaFsMax'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('metaResultsCard').style.display = 'none';
+});
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) handleSelectedFile(e.target.files[0]);
-        });
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('over'); });
-        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('over');
-            if (e.dataTransfer.files.length) handleSelectedFile(e.dataTransfer.files[0]);
-        });
+async function doMetaSearch() {
+    const params = new URLSearchParams();
+    const fields = {
+        speaker: 'metaSpeaker', duration_min: 'metaDurMin', duration_max: 'metaDurMax',
+        word_count_min: 'metaWcMin', word_count_max: 'metaWcMax',
+        file_size_min: 'metaFsMin', file_size_max: 'metaFsMax'
+    };
+    for (const [k, id] of Object.entries(fields)) {
+        const v = document.getElementById(id).value;
+        if (v) params.append(k, v);
+    }
+    params.append('limit', '50');
+    params.append('offset', String(metaOffset));
 
-        changeBtn.addEventListener('click', () => {
-            selectedFile = null;
-            if (audioPreview.src) URL.revokeObjectURL(audioPreview.src);
-            audioPreview.src = '';
-            fileInput.value = '';
-            previewDiv.style.display = 'none';
-            dropZone.style.display = 'block';
-            badge1.classList.remove('done');
-            badge1.innerHTML = '1';
-            fileStatusLabel.textContent = 'Chưa có tệp';
-            searchBtn.disabled = true;
-            resultsCard.style.display = 'none';
-            errorCard.style.display = 'none';
-        });
+    const btn = document.getElementById('metaSearchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spin"></span> Đang tìm...';
 
-        const engineBtns = document.querySelectorAll('.engine-card');
-        engineBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                engineBtns.forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                selectedEngine = btn.dataset.engine;
-                const engineName = selectedEngine === 'ivfflat' ? 'IVFFlat (nhanh)' : 'KD-Tree (chính xác)';
-                engineStatusLabel.textContent = engineName;
-            });
-        });
+    try {
+        const resp = await fetch('/metadata-search?' + params.toString());
+        const data = await resp.json();
 
-        let animInterval = null;
-        function startLoadingAnimation() {
-            const steps = [
-                { dot: 'sdot1', label: 'slabel1', pct: 20 },
-                { dot: 'sdot2', label: 'slabel2', pct: 45 },
-                { dot: 'sdot3', label: 'slabel3', pct: 70 },
-                { dot: 'sdot4', label: 'slabel4', pct: 95 }
-            ];
-            const progFill = document.getElementById('progFill');
-            const progPctSpan = document.getElementById('progPct');
-            if (!progFill) return;
+        if (!resp.ok || data.error) throw new Error(data.error);
 
-            steps.forEach((s, idx) => {
-                const dotEl = document.getElementById(s.dot);
-                if (dotEl) dotEl.className = 'step-dot' + (idx === 0 ? ' active' : '');
-            });
-            if (animInterval) clearInterval(animInterval);
-            let fakePct = 0;
-            animInterval = setInterval(() => {
-                if (fakePct < 98) {
-                    fakePct += Math.random() * 7;
-                    if (fakePct > 98) fakePct = 98;
-                    progFill.style.width = fakePct + '%';
-                    if (progPctSpan) progPctSpan.innerText = Math.floor(fakePct) + '%';
-                    const stepIndex = Math.min(steps.length - 1, Math.floor(fakePct / 25));
-                    for (let i = 0; i < steps.length; i++) {
-                        const dot = document.getElementById(steps[i].dot);
-                        if (dot) {
-                            if (i < stepIndex) dot.className = 'step-dot complete';
-                            else if (i === stepIndex) dot.className = 'step-dot active';
-                            else dot.className = 'step-dot';
-                        }
-                    }
-                }
-            }, 220);
-        }
+        const tbody = document.getElementById('metaResultsBody');
+        tbody.innerHTML = data.results.map((r, i) => `
+            <tr>
+                <td>${metaOffset + i + 1}</td>
+                <td title="${r.file_name}">${r.file_name}</td>
+                <td><span class="pill">${r.speaker}</span></td>
+                <td>${(r.duration_seconds || 0).toFixed(1)}s</td>
+                <td>${r.word_count || 0}</td>
+                <td>${((r.file_size_bytes || 0) / 1024).toFixed(1)}</td>
+                <td>${r.audio_url ? `<audio controls src="${r.audio_url}"></audio>` : '—'}</td>
+            </tr>
+        `).join('');
 
-        function stopLoadingAnimation() {
-            if (animInterval) clearInterval(animInterval);
-            const progFill = document.getElementById('progFill');
-            if (progFill) progFill.style.width = '100%';
-            const pctSpan = document.getElementById('progPct');
-            if (pctSpan) pctSpan.innerText = '100%';
-            const stepsDot = ['sdot1', 'sdot2', 'sdot3', 'sdot4'];
-            stepsDot.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.className = 'step-dot complete';
-            });
-        }
+        document.getElementById('metaResultsCount').innerHTML = `${data.total} kết quả (đang hiện ${data.results.length})`;
+        document.getElementById('metaResultsCard').style.display = 'block';
 
-        function renderResults(resultsArray) {
-            if (!resultsArray || resultsArray.length === 0) {
-                errorCard.style.display = 'block';
-                document.getElementById('errorText').innerText = 'Không tìm thấy giọng nói tương tự. Hãy thử tệp khác hoặc đổi engine.';
-                return;
-            }
-            const tbody = document.getElementById('resultsBody');
-            tbody.innerHTML = '';
-            resultsArray.forEach((item, idx) => {
-                const row = tbody.insertRow();
-                const rankCell = row.insertCell(0);
-                rankCell.innerHTML = `<span class="rank ${idx === 0 ? 'gold' : ''}">${idx+1}</span>`;
-                row.insertCell(1).innerHTML = `<div style="white-space: nowrap; overflow-x: auto; max-width: 200px;" title="${item.file_name || item.name || 'giọng nói'}">${item.file_name || item.name || `Mẫu ${idx+1}`}</div>`;
-                row.insertCell(2).innerHTML = `<span class="pill">${item.speaker || 'không xác định'}</span>`;
-                row.insertCell(3).innerHTML = `<span style="font-family: monospace;">${(item.dtw_distance || item.score || 0.2 + idx*0.07).toFixed(4)}</span>`;
-                const audioUrl = item.audio_url || (item.file_path ? `/static/${item.file_path}` : null);
-                const audioCell = row.insertCell(4);
-                audioCell.className = 'audio-preview-cell';
-                audioCell.innerHTML = audioUrl ? `<audio controls src="${audioUrl}" style="width:100%; min-width:180px; height:34px;"></audio>` : `<span class="pill">—</span>`;
-            });
-            document.getElementById('resultsCount').innerHTML = `${resultsArray.length} kết quả phù hợp`;
-            resultsCard.style.display = 'block';
-        }
+        // Pagination
+        const pag = document.getElementById('metaPagination');
+        const totalPages = Math.ceil(data.total / data.limit);
+        pag.innerHTML = `
+            <button class="btn-secondary" ${metaOffset === 0 ? 'disabled' : ''} onclick="metaPage(${metaOffset - data.limit})">&laquo; Trước</button>
+            <span>Trang ${Math.floor(metaOffset / data.limit) + 1} / ${Math.max(1, totalPages)} (Tổng: ${data.total})</span>
+            <button class="btn-secondary" ${metaOffset + data.limit >= data.total ? 'disabled' : ''} onclick="metaPage(${metaOffset + data.limit})">Sau &raquo;</button>
+        `;
+    } catch (err) {
+        alert('Lỗi: ' + (err.message || 'Không thể kết nối'));
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Tìm kiếm Metadata';
+    }
+}
 
-        searchBtn.addEventListener('click', async () => {
-            if (!selectedFile) {
-                alert('Hãy chọn tệp âm thanh trước.');
-                return;
-            }
-            errorCard.style.display = 'none';
-            resultsCard.style.display = 'none';
-            loadingCard.style.display = 'block';
-            searchBtn.disabled = true;
-            searchBtn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite"></div> Đang xử lý...';
+function metaPage(off) { metaOffset = off; doMetaSearch(); }
 
-            startLoadingAnimation();
+// ===================================================================
+//  STATS (auto-load on tab switch)
+// ===================================================================
+async function loadStats() {
+    try {
+        const resp = await fetch('/stats');
+        const data = await resp.json();
+        if (data.error) throw new Error(data.error);
 
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('engine', selectedEngine);
+        document.getElementById('statsGrid').innerHTML = `
+            <div class="stat-item"><div class="stat-value">${data.total_files}</div><div class="stat-label">Tổng file âm thanh</div></div>
+            <div class="stat-item"><div class="stat-value">${data.total_segments}</div><div class="stat-label">Tổng segment</div></div>
+            <div class="stat-item"><div class="stat-value">${data.distinct_speakers}</div><div class="stat-label">Người nói phân biệt</div></div>
+            <div class="stat-item"><div class="stat-value">${data.files_duration_4_7}</div><div class="stat-label">File [4s - 7s]</div></div>
+            <div class="stat-item"><div class="stat-value">${data.duration_min.toFixed(1)}s</div><div class="stat-label">Độ dài ngắn nhất</div></div>
+            <div class="stat-item"><div class="stat-value">${data.duration_max.toFixed(1)}s</div><div class="stat-label">Độ dài dài nhất</div></div>
+            <div class="stat-item"><div class="stat-value">${data.duration_avg.toFixed(1)}s</div><div class="stat-label">Độ dài trung bình</div></div>
+        `;
 
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000);
-                const response = await fetch('/search', {
-                    method: 'POST',
-                    body: formData,
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                const data = await response.json();
-                if (!response.ok || data.error) {
-                    throw new Error(data.error || 'Lỗi từ máy chủ tìm kiếm.');
-                }
-                stopLoadingAnimation();
-                setTimeout(() => {
-                    loadingCard.style.display = 'none';
-                    if (data.results && data.results.length) renderResults(data.results);
-                    else {
-                        errorCard.style.display = 'block';
-                        document.getElementById('errorText').innerText = 'Không tìm thấy kết quả tương tự. Thử với engine khác.';
-                    }
-                }, 200);
-            } catch (err) {
-                console.error(err);
-                stopLoadingAnimation();
-                loadingCard.style.display = 'none';
-                errorCard.style.display = 'block';
-                document.getElementById('errorText').innerText = err.message || 'Không thể kết nối đến máy chủ tìm kiếm. Vui lòng thử lại.';
-            } finally {
-                searchBtn.disabled = false;
-                searchBtn.innerHTML = 'Tìm kiếm giọng nói tương tự';
-            }
-        });
-
-        const styleSpin = document.createElement('style');
-        styleSpin.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } .spinner { display: inline-block; animation: spin 0.6s linear infinite; }`;
-        document.head.appendChild(styleSpin);
-    })();
+        document.getElementById('topSpeakers').innerHTML = (data.top_speakers || [])
+            .map(s => `<span class="pill" style="margin:2px 4px;">${s.speaker} (${s.count})</span>`).join('');
+    } catch (err) {
+        document.getElementById('statsGrid').innerHTML = `<div class="error-box">Lỗi tải thống kê: ${err.message}</div>`;
+    }
+}
 </script>
 </body>
 </html>
