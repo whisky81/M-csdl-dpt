@@ -1,5 +1,6 @@
 # search.py
 import logging
+import os
 import pickle
 from collections import Counter
 from typing import List, Tuple, Dict, Optional
@@ -15,7 +16,7 @@ from config import K_SEGMENTS_PER_QUERY, MAX_CANDIDATE_FILES, TOP_K_FILES, FEATU
 
 log = logging.getLogger(__name__)
 
-KD_TREE_PICKLE = "kdtree_segments_minmax.pkl"
+KD_TREE_PICKLE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "kdtree_segments_minmax.pkl")
 
 
 def load_kdtree():
@@ -42,9 +43,8 @@ def search_segments_ivfflat(db: DBPool, query_vec: List[float], k: int = 20) -> 
         rows = cur.fetchall()
     return [(r[0], r[1], float(r[2])) for r in rows]
 
-def search_segments_kdtree(query_vec: List[float], k: int = 20) -> List[Tuple[int, int, float]]:
+def search_segments_kdtree(query_vec: List[float], tree, mapping, k: int = 20) -> List[Tuple[int, int, float]]:
     """Tim k segment gan nhat dung cKDTree (Euclidean)."""
-    tree, mapping = load_kdtree()
     q = np.array(query_vec, dtype=np.float64)
     distances, indices = tree.query(q, k=k)
     if k == 1:
@@ -214,11 +214,18 @@ def search_top_files(
     # Step 2: Tim segment khop
     all_segment_matches = []
     per_segment_matches = []
+
+    # Load KD-Tree mot lan duy nhat (tranh load lai moi query segment)
+    kdtree_tree = None
+    kdtree_mapping = None
+    if not use_ivfflat:
+        kdtree_tree, kdtree_mapping = load_kdtree()
+
     for qvec in query_segments:
         if use_ivfflat:
             matches = search_segments_ivfflat(db, qvec, k=K_SEGMENTS_PER_QUERY)
         else:
-            matches = search_segments_kdtree(qvec, k=K_SEGMENTS_PER_QUERY)
+            matches = search_segments_kdtree(qvec, kdtree_tree, kdtree_mapping, k=K_SEGMENTS_PER_QUERY)
         all_segment_matches.extend(matches)
         per_segment_matches.append(len(matches))
 

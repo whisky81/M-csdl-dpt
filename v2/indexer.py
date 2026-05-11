@@ -18,7 +18,7 @@ from config import FEATURE_DIM
 
 log = logging.getLogger(__name__)
 
-KD_TREE_PICKLE = Path("kdtree_segments_minmax.pkl")
+KD_TREE_PICKLE = Path(__file__).resolve().parent / "kdtree_segments_minmax.pkl"
 
 # ----------------------------------------------------------------------
 # Worker function (module-level để pickle được)
