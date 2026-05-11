@@ -139,6 +139,10 @@
         <div class="card-header">Tải file âm thanh</div>
         <div class="card-body">
             <input type="file" id="audioFile" accept=".flac,.wav,.mp3">
+            <div id="audioPreview" style="display:none; margin-bottom:10px;">
+                <label>Xem trước file đã chọn</label>
+                <audio id="previewPlayer" controls style="width:100%; height:36px;"></audio>
+            </div>
             <div class="row">
                 <div>
                     <label>Engine tìm kiếm</label>
@@ -288,7 +292,22 @@ function switchTab(name) {
 //  AUDIO SIMILARITY SEARCH
 // ===================================================================
 let selectedFile = null;
-document.getElementById('audioFile').addEventListener('change', e => { selectedFile = e.target.files[0]; });
+let previewUrl = null;
+document.getElementById('audioFile').addEventListener('change', e => {
+    selectedFile = e.target.files[0];
+    // Clean up old blob URL
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    const preview = document.getElementById('audioPreview');
+    const player = document.getElementById('previewPlayer');
+    if (selectedFile) {
+        previewUrl = URL.createObjectURL(selectedFile);
+        player.src = previewUrl;
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+        previewUrl = null;
+    }
+});
 
 function renderIntermediate(steps) {
     const container = document.getElementById('stepsContainer');
